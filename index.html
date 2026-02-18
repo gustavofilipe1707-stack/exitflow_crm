@@ -3,160 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ExitFlow | Real-Time Portal</title>
+    <title>ExitFlow | Core Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --bg: #05070a; --panel: #0d1117; --neon: #00d4ff; --text: #f1f5f9; --border: #1e293b; --danger: #ff4d4d; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; }
         .hidden { display: none !important; }
         
-        /* LOGIN */
-        #login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: var(--panel); border: 1px solid var(--border); padding: 30px; border-radius: 15px; width: 100%; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
         /* HEADER & NAV */
         header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 10px 15px; position: sticky; top:0; z-index:100; }
-        .nav-scroller { display: flex; overflow-x: auto; gap: 8px; padding: 10px 0; scrollbar-width: none; }
-        .nav-scroller::-webkit-scrollbar { display: none; }
-        .nav-link-ef { color: #8b949e; cursor: pointer; font-weight: 600; padding: 10px 16px; border-radius: 8px; white-space: nowrap; transition: 0.2s; border: 1px solid transparent; }
-        .nav-link-ef.active { color: var(--neon); background: rgba(0, 212, 255, 0.1); border-color: rgba(0, 212, 255, 0.3); }
+        .nav-scroller { display: flex; overflow-x: auto; gap: 5px; padding: 10px 0; scrollbar-width: none; }
+        .nav-link-ef { color: #8b949e; cursor: pointer; font-weight: 600; padding: 10px 15px; border-radius: 8px; white-space: nowrap; font-size: 14px; }
+        .nav-link-ef.active { color: var(--neon); background: rgba(0, 212, 255, 0.1); }
 
-        /* REAL-TIME CARDS */
-        .ef-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; height: 100%; transition: 0.3s; }
-        .health-indicator { display: flex; align-items: center; gap: 15px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 20px; font-size: 13px; }
-        .pulse { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-        
-        /* TABLE & LISTS */
-        .table { --bs-table-bg: transparent; color: var(--text); vertical-align: middle; }
-        .aluno-row { border-bottom: 1px solid var(--border); transition: 0.3s; }
-        .aluno-row:last-child { border-bottom: none; }
-        @media(max-width: 576px) { .hide-sm { display: none; } }
+        /* CARDS */
+        .ef-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+
+        /* CALENDÁRIO FIX (GRID) */
+        .cal-container { background: #161b22; border-radius: 10px; padding: 10px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .cal-header { text-align: center; font-size: 10px; color: #8b949e; font-weight: bold; padding-bottom: 5px; }
+        .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid transparent; position: relative; }
+        .cal-day.active { border-color: var(--neon); color: var(--neon); background: rgba(0, 212, 255, 0.05); }
+        .dot { width: 4px; height: 4px; background: var(--neon); border-radius: 50%; position: absolute; bottom: 4px; }
+
+        /* LISTAS */
+        .item-list { border-left: 3px solid var(--neon); background: rgba(255,255,255,0.03); padding: 12px; border-radius: 0 8px 8px 0; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .item-list:hover { background: rgba(255,255,255,0.06); }
 
         /* FORMS */
-        .env-selector { background: #161b22; color: var(--neon); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 14px; outline: none; }
-        input { background: #0b0e14 !important; border: 1px solid var(--border) !important; color: white !important; padding: 14px !important; border-radius: 10px !important; margin-bottom: 12px; }
-        .btn-neon { background: var(--neon); color: #000; font-weight: 800; border: none; padding: 14px; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        input, select, textarea { background: #0b0e14 !important; border: 1px solid var(--border) !important; color: white !important; padding: 12px !important; border-radius: 8px !important; margin-bottom: 10px; width: 100%; }
+        .btn-neon { background: var(--neon); color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 8px; width: 100%; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
-    <div class="login-card text-center">
-        <h1 style="color: var(--neon); font-weight: 800; margin-bottom: 5px;">EXITFLOW</h1>
-        <p class="text-secondary small mb-4">Sincronização em Tempo Real</p>
-        <input type="text" id="user" placeholder="Usuário">
+    <div class="p-4 w-100" style="max-width: 400px; margin: 100px auto; background: var(--panel); border-radius: 15px; border: 1px solid var(--border);">
+        <h2 class="text-center" style="color: var(--neon);">EXITFLOW</h2>
+        <input type="text" id="user" placeholder="Usuário" class="mt-4">
         <input type="password" id="pass" placeholder="Senha">
-        <div class="d-flex align-items-center mb-4 gap-2">
-            <input type="checkbox" id="remember" style="width: 20px; height: 20px; margin: 0; cursor: pointer;">
-            <label for="remember" class="small text-secondary cursor-pointer">Manter conectado</label>
-        </div>
-        <button class="btn-neon w-100" onclick="login()">ENTRAR NO SISTEMA</button>
+        <button class="btn-neon" onclick="login()">ACESSAR</button>
     </div>
 </div>
 
 <div id="portal" class="hidden">
     <header>
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="fw-bold" style="color: var(--neon); letter-spacing: 1px;">EXITFLOW <span class="text-white fw-light">CORE</span></div>
-            <select class="env-selector" id="env-select" onchange="switchEnvironment()">
-                <option value="saidagaia">POLO GAIA</option>
-                <option value="polo_teste">POLO TESTE</option>
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-bold" style="color: var(--neon);">EXITFLOW PRO</span>
+            <select id="env-select" style="width: auto; margin:0; padding: 5px !important;" onchange="switchEnvironment()">
+                <option value="saidagaia">GAIA</option>
+                <option value="polo_teste">TESTE</option>
             </select>
         </div>
         <div class="nav-scroller">
-            <div class="nav-link-ef active" id="nav-dash" onclick="showTab('dash')"><i class="bi bi-speedometer2 me-1"></i> MONITOR</div>
-            <div class="nav-link-ef" id="nav-cal" onclick="showTab('cal')"><i class="bi bi-calendar3 me-1"></i> AGENDA</div>
-            <div class="nav-link-ef" id="nav-cli" onclick="showTab('cli')"><i class="bi bi-briefcase me-1"></i> CLIENTES</div>
+            <span class="nav-link-ef active" id="nav-dash" onclick="showTab('dash')">MONITOR</span>
+            <span class="nav-link-ef" id="nav-cal" onclick="showTab('cal')">AGENDA</span>
+            <span class="nav-link-ef" id="nav-cli" onclick="showTab('cli')">CLIENTES</span>
         </div>
     </header>
 
     <main class="p-3">
         <div id="tab-dash" class="tab-content">
-            <div class="health-indicator">
-                <span><span class="pulse online"></span> DB: <b id="health-db" class="text-success">CONECTADO</b></span>
-                <span class="ms-auto text-secondary"><i class="bi bi-broadcast"></i> Latência: <b id="health-ping" class="text-white">-- ms</b></span>
+            <div class="row g-2 mb-3">
+                <div class="col-6"><div class="ef-card text-center"><small class="text-secondary">ESPERA</small><h2 id="count-waiting" class="text-warning mb-0">0</h2></div></div>
+                <div class="col-6"><div class="ef-card text-center"><small class="text-secondary">SAÍDA</small><h2 id="count-delivered" class="text-success mb-0">0</h2></div></div>
             </div>
-
-            <div class="row g-3 mb-4">
-                <div class="col-6">
-                    <div class="ef-card text-center">
-                        <small class="text-secondary d-block mb-1">AGUARDANDO</small>
-                        <h2 id="count-waiting" class="text-warning fw-bold mb-0">0</h2>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="ef-card text-center">
-                        <small class="text-secondary d-block mb-1">LIBERADOS</small>
-                        <h2 id="count-delivered" class="text-success fw-bold mb-0">0</h2>
-                    </div>
-                </div>
-            </div>
-
             <div class="ef-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 text-uppercase fw-bold" style="font-size: 12px; color: var(--neon);">Fila de Alunos em Tempo Real</h6>
-                    <span class="badge bg-primary" style="font-size: 10px;">LIVE</span>
-                </div>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead class="text-secondary small">
-                            <tr><th>ALUNO</th><th class="hide-sm">SALA</th><th>HORA</th></tr>
-                        </thead>
-                        <tbody id="realtime-body">
-                            </tbody>
-                    </table>
-                </div>
+                <h6>Fila de Alunos</h6>
+                <div id="realtime-body" class="mt-3"></div>
             </div>
         </div>
 
         <div id="tab-cal" class="tab-content hidden">
-            <div class="ef-card mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6>Calendário POC</h6>
-                    <button class="btn btn-sm btn-info" onclick="openModal('modalEv')"><i class="bi bi-plus"></i></button>
+            <div class="cal-container mb-3">
+                <div class="cal-grid">
+                    <div class="cal-header">D</div><div class="cal-header">S</div><div class="cal-header">T</div><div class="cal-header">Q</div><div class="cal-header">Q</div><div class="cal-header">S</div><div class="cal-header">S</div>
                 </div>
-                <div class="cal-grid" id="gridCal"></div>
+                <div id="gridCal" class="cal-grid"></div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 id="calTitle" class="mb-0">Selecione um dia</h6>
+                <button class="btn btn-sm btn-info" onclick="openModal('modalEv')">+</button>
             </div>
             <div id="calEventsList"></div>
         </div>
 
         <div id="tab-cli" class="tab-content hidden">
-            <div class="ef-card">
-                <div class="d-flex justify-content-between mb-3 align-items-center">
-                    <h6>Base de Escolas</h6>
-                    <button class="btn btn-sm btn-info" onclick="openModal('modalCli')">Novo Cliente</button>
-                </div>
-                <div id="cliList"></div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6>Base de Clientes</h6>
+                <button class="btn btn-sm btn-info" onclick="openModalCli()">+ Novo</button>
             </div>
+            <div id="cliList"></div>
         </div>
     </main>
 </div>
 
-<div class="modal fade" id="modalEv" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content bg-dark border-secondary p-4">
-    <h6 id="dateLabel" class="text-info mb-3">Novo Compromisso</h6>
-    <input type="text" id="ev-emp" placeholder="Nome da Escola">
-    <input type="text" id="ev-ass" placeholder="Assunto/Status">
-    <button class="btn-neon w-100" onclick="saveEv()">SALVAR NA AGENDA</button>
+<div class="modal fade" id="modalCli" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content bg-dark p-4 border-secondary text-white">
+    <h5 id="cliModalTitle">Novo Cliente</h5>
+    <input type="hidden" id="c-id">
+    <label class="small text-secondary">Escola</label>
+    <input type="text" id="c-nom">
+    <label class="small text-secondary">Gestor</label>
+    <input type="text" id="c-res">
+    <label class="small text-secondary">Telefone / WhatsApp</label>
+    <input type="text" id="c-tel">
+    <label class="small text-secondary">E-mail</label>
+    <input type="text" id="c-mai">
+    <div class="d-flex gap-2">
+        <button id="btnDelCli" class="btn btn-outline-danger hidden" onclick="delCli()">EXCLUIR</button>
+        <button class="btn-neon" onclick="saveCli()">SALVAR</button>
+    </div>
 </div></div></div>
 
-<div class="modal fade" id="modalCli" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content bg-dark border-secondary p-4">
-    <h6 class="text-info mb-3">Cadastrar Escola</h6>
-    <input type="text" id="c-nom" placeholder="Nome da Unidade">
-    <input type="text" id="c-tel" placeholder="Telefone de Contato">
-    <button class="btn-neon w-100" onclick="saveCli()">FINALIZAR CADASTRO</button>
+<div class="modal fade" id="modalEv" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content bg-dark p-4 border-secondary text-white">
+    <h5 id="dateLabel">Agendar</h5>
+    <input type="text" id="ev-emp" placeholder="Escola">
+    <textarea id="ev-ass" placeholder="Detalhes da Atividade" rows="3"></textarea>
+    <button class="btn-neon" onclick="saveEv()">SALVAR NA AGENDA</button>
 </div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const environments = {
-        saidagaia: { url: "https://saidagaia-default-rtdb.firebaseio.com", label: "GAIA" },
-        polo_teste: { url: "https://saidagaia-default-rtdb.firebaseio.com", label: "TESTE" }
-    };
-
     let database = null;
     let selDate = null;
     let localDB = {
@@ -164,56 +135,24 @@
         cli: JSON.parse(localStorage.getItem('ef_cli')) || []
     };
 
-    window.onload = () => {
-        const savedUser = localStorage.getItem('ef_remembered_user');
-        if(savedUser) {
-            document.getElementById('user').value = savedUser;
-            document.getElementById('remember').checked = true;
-        }
-    };
-
     function login() {
-        const u = document.getElementById('user').value;
-        const p = document.getElementById('pass').value;
-        if(u.toLowerCase() === "gustavo.filipe" && p === "1234") {
-            if(document.getElementById('remember').checked) localStorage.setItem('ef_remembered_user', u);
+        if(document.getElementById('user').value.toLowerCase() === "gustavo.filipe" && document.getElementById('pass').value === "1234") {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('portal').classList.remove('hidden');
             initFirebase('saidagaia');
-        } else alert("Acesso Negado");
+        }
     }
 
     function initFirebase(envKey) {
-        const config = { 
-            apiKey: "AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk", 
-            authDomain: "saidagaia.firebaseapp.com", 
-            databaseURL: environments[envKey].url,
-            projectId: "saidagaia"
-        };
+        const config = { databaseURL: "https://saidagaia-default-rtdb.firebaseio.com" };
         if (firebase.apps.length) firebase.app().delete();
         firebase.initializeApp(config);
         database = firebase.database();
-        startRealtimeEngine();
+        startRealtime();
     }
 
-    function startRealtimeEngine() {
+    function startRealtime() {
         const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
-        
-        // HEALTH PULSE
-        database.ref(".info/connected").on("value", snap => {
-            const el = document.getElementById('health-db');
-            el.innerText = snap.val() ? "CONECTADO" : "RECONECTANDO...";
-            el.className = snap.val() ? "text-success" : "text-danger";
-        });
-
-        setInterval(() => {
-            const s = Date.now();
-            database.ref(".info/serverTimeOffset").once("value").then(() => {
-                document.getElementById('health-ping').innerText = (Date.now() - s) + " ms";
-            });
-        }, 5000);
-
-        // SYNC ALUNOS
         database.ref('fila/').orderByChild('data').equalTo(hoje).on('value', snap => {
             const data = snap.val() || {};
             let w = 0, d = 0, html = "";
@@ -221,17 +160,113 @@
                 const item = data[id];
                 if(item.status === 'aguardando') {
                     w++;
-                    html += `<tr class="aluno-row">
-                        <td><div class="fw-bold">${item.aluno}</div><div class="small text-secondary hide-sm">${item.responsavel}</div></td>
-                        <td class="hide-sm text-info">${item.serie}</td>
-                        <td class="text-white">${new Date(item.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
-                    </tr>`;
+                    html += `<div class="item-list"><b>${item.aluno}</b><br><small class="text-secondary">${item.serie} | ${item.responsavel}</small></div>`;
                 } else d++;
             });
             document.getElementById('count-waiting').innerText = w;
             document.getElementById('count-delivered').innerText = d;
-            document.getElementById('realtime-body').innerHTML = html || '<tr><td colspan="3" class="text-center p-4 text-secondary">Nenhum aluno na fila de saída</td></tr>';
+            document.getElementById('realtime-body').innerHTML = html || '<p class="text-center text-secondary small">Nenhum aluno na fila</p>';
         });
+    }
+
+    // CALENDÁRIO FIX
+    function renderCalendar() {
+        const g = document.getElementById('gridCal'); g.innerHTML = "";
+        for(let i=1; i<=28; i++) {
+            let key = `2026-02-${i < 10 ? '0'+i : i}`;
+            let has = localDB.evs[key] && localDB.evs[key].length > 0;
+            let div = document.createElement('div');
+            div.className = `cal-day ${selDate === key ? 'active' : ''}`;
+            div.innerHTML = `<span>${i}</span>${has ? '<div class="dot"></div>' : ''}`;
+            div.onclick = () => { selDate = key; renderCalendar(); showEvents(); };
+            g.appendChild(div);
+        }
+    }
+
+    function showEvents() {
+        const evs = localDB.evs[selDate] || [];
+        document.getElementById('calTitle').innerText = "Data: " + selDate;
+        document.getElementById('calEventsList').innerHTML = evs.map((e, i) => `
+            <div class="item-list d-flex justify-content-between align-items-start">
+                <div><b>${e.emp}</b><br><small>${e.ass}</small></div>
+                <i class="bi bi-x-circle text-danger" onclick="delEv(${i})"></i>
+            </div>
+        `).join('');
+    }
+
+    function saveEv() {
+        if(!selDate) return;
+        if(!localDB.evs[selDate]) localDB.evs[selDate] = [];
+        localDB.evs[selDate].push({emp: document.getElementById('ev-emp').value, ass: document.getElementById('ev-ass').value});
+        localStorage.setItem('ef_evs', JSON.stringify(localDB.evs));
+        bootstrap.Modal.getInstance(document.getElementById('modalEv')).hide();
+        renderCalendar(); showEvents();
+    }
+
+    function delEv(i) { localDB.evs[selDate].splice(i,1); localStorage.setItem('ef_evs', JSON.stringify(localDB.evs)); showEvents(); renderCalendar(); }
+
+    // GESTÃO DE CLIENTES (EDITAR/EXCLUIR)
+    function renderClients() {
+        const list = document.getElementById('cliList');
+        list.innerHTML = localDB.cli.map((c, i) => `
+            <div class="item-list" onclick="openModalCli(${i})">
+                <div class="d-flex justify-content-between">
+                    <b>${c.n}</b>
+                    <span class="text-info small">Ver detalhes</span>
+                </div>
+                <small class="text-secondary">${c.t}</small>
+            </div>
+        `).join('');
+    }
+
+    function openModalCli(index = null) {
+        const modal = new bootstrap.Modal(document.getElementById('modalCli'));
+        if(index !== null) {
+            const c = localDB.cli[index];
+            document.getElementById('c-id').value = index;
+            document.getElementById('c-nom').value = c.n;
+            document.getElementById('c-res').value = c.r;
+            document.getElementById('c-tel').value = c.t;
+            document.getElementById('c-mai').value = c.m;
+            document.getElementById('cliModalTitle').innerText = "Editar Cliente";
+            document.getElementById('btnDelCli').classList.remove('hidden');
+        } else {
+            document.getElementById('c-id').value = "";
+            document.getElementById('c-nom').value = "";
+            document.getElementById('c-res').value = "";
+            document.getElementById('c-tel').value = "";
+            document.getElementById('c-mai').value = "";
+            document.getElementById('cliModalTitle').innerText = "Novo Cliente";
+            document.getElementById('btnDelCli').classList.add('hidden');
+        }
+        modal.show();
+    }
+
+    function saveCli() {
+        const id = document.getElementById('c-id').value;
+        const cliData = {
+            n: document.getElementById('c-nom').value,
+            r: document.getElementById('c-res').value,
+            t: document.getElementById('c-tel').value,
+            m: document.getElementById('c-mai').value
+        };
+
+        if(id !== "") localDB.cli[id] = cliData;
+        else localDB.cli.push(cliData);
+
+        localStorage.setItem('ef_cli', JSON.stringify(localDB.cli));
+        bootstrap.Modal.getInstance(document.getElementById('modalCli')).hide();
+        renderClients();
+    }
+
+    function delCli() {
+        const id = document.getElementById('c-id').value;
+        if(confirm("Deseja realmente excluir este cliente?")) {
+            localDB.cli.splice(id, 1);
+            localStorage.setItem('ef_cli', JSON.stringify(localDB.cli));
+            bootstrap.Modal.getInstance(document.getElementById('modalCli')).hide();
+            renderClients();
+        }
     }
 
     function showTab(id) {
@@ -242,58 +277,6 @@
         if(id === 'cal') renderCalendar();
         if(id === 'cli') renderClients();
     }
-
-    // AGENDA E CLIENTES (MANUTENÇÃO DE ESTADO)
-    function renderCalendar() {
-        const g = document.getElementById('gridCal'); g.innerHTML = "";
-        for(let i=1; i<=28; i++) {
-            let key = `2026-02-${i < 10 ? '0'+i : i}`;
-            let has = localDB.evs[key] && localDB.evs[key].length > 0;
-            let div = document.createElement('div');
-            div.className = `cal-day ${selDate === key ? 'active' : ''}`;
-            div.style = "background:#161b22; aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:12px; cursor:pointer; position:relative; border: 1px solid "+(selDate === key ? "var(--neon)":"#1e293b");
-            div.innerHTML = `<span>${i}</span>${has ? '<div style="width:5px;height:5px;background:var(--neon);border-radius:50%;position:absolute;bottom:4px"></div>' : ''}`;
-            div.onclick = () => { selDate = key; renderCalendar(); showEvents(); };
-            g.appendChild(div);
-        }
-    }
-
-    function showEvents() {
-        const evs = localDB.evs[selDate] || [];
-        document.getElementById('calEventsList').innerHTML = evs.length ? evs.map(e => `<div class="ef-card mb-2 p-2" style="border-left: 4px solid var(--neon)"><b>${e.emp}</b><br><small>${e.ass}</small></div>`).join('') : "<div class='text-center text-secondary small'>Nenhum evento</div>";
-    }
-
-    function saveEv() {
-        const emp = document.getElementById('ev-emp').value, ass = document.getElementById('ev-ass').value;
-        if(!emp || !selDate) return;
-        if(!localDB.evs[selDate]) localDB.evs[selDate] = [];
-        localDB.evs[selDate].push({emp, ass});
-        localStorage.setItem('ef_evs', JSON.stringify(localDB.evs));
-        bootstrap.Modal.getInstance(document.getElementById('modalEv')).hide();
-        renderCalendar(); showEvents();
-    }
-
-    function renderClients() {
-        const b = document.getElementById('cliList'); b.innerHTML = localDB.cli.length ? localDB.cli.map((c, i) => `
-            <div class="ef-card mb-2 d-flex justify-content-between align-items-center">
-                <div><b>${c.n}</b><br><small class="text-secondary">${c.t}</small></div>
-                <i class="bi bi-trash text-danger" onclick="delCli(${i})"></i>
-            </div>
-        `).join('') : "<div class='text-center text-secondary py-4'>Nenhuma escola cadastrada</div>";
-    }
-
-    function saveCli() {
-        const n = document.getElementById('c-nom').value, t = document.getElementById('c-tel').value;
-        if(!n) return;
-        localDB.cli.push({n, t});
-        localStorage.setItem('ef_cli', JSON.stringify(localDB.cli));
-        bootstrap.Modal.getInstance(document.getElementById('modalCli')).hide();
-        renderClients();
-    }
-
-    function delCli(i) { localDB.cli.splice(i, 1); localStorage.setItem('ef_cli', JSON.stringify(localDB.cli)); renderClients(); }
-    function openModal(id) { new bootstrap.Modal(document.getElementById(id)).show(); }
-    function switchEnvironment() { initFirebase(document.getElementById('env-select').value); }
 </script>
 </body>
 </html>

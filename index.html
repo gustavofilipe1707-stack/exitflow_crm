@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ExitFlow | Core Management</title>
+    <title>ExitFlow | Cloud Management v1.0</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
@@ -13,28 +13,22 @@
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; }
         .hidden { display: none !important; }
         
-        /* HEADER & NAV */
+        /* HEADER */
         header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 10px 15px; position: sticky; top:0; z-index:100; }
         .nav-scroller { display: flex; overflow-x: auto; gap: 5px; padding: 10px 0; scrollbar-width: none; }
         .nav-link-ef { color: #8b949e; cursor: pointer; font-weight: 600; padding: 10px 15px; border-radius: 8px; white-space: nowrap; font-size: 14px; }
         .nav-link-ef.active { color: var(--neon); background: rgba(0, 212, 255, 0.1); }
 
-        /* CARDS */
-        .ef-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        /* CALENDÁRIO */
+        .cal-container { background: #161b22; border-radius: 10px; padding: 10px; border: 1px solid var(--border); }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; border-radius: 6px; font-size: 11px; cursor: pointer; border: 1px solid transparent; position: relative; }
+        .cal-day.active { border-color: var(--neon); color: var(--neon); }
+        .dot { width: 4px; height: 4px; background: var(--neon); border-radius: 50%; position: absolute; bottom: 3px; }
 
-        /* CALENDÁRIO FIX (GRID) */
-        .cal-container { background: #161b22; border-radius: 10px; padding: 10px; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .cal-header { text-align: center; font-size: 10px; color: #8b949e; font-weight: bold; padding-bottom: 5px; }
-        .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid transparent; position: relative; }
-        .cal-day.active { border-color: var(--neon); color: var(--neon); background: rgba(0, 212, 255, 0.05); }
-        .dot { width: 4px; height: 4px; background: var(--neon); border-radius: 50%; position: absolute; bottom: 4px; }
-
-        /* LISTAS */
-        .item-list { border-left: 3px solid var(--neon); background: rgba(255,255,255,0.03); padding: 12px; border-radius: 0 8px 8px 0; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-        .item-list:hover { background: rgba(255,255,255,0.06); }
-
-        /* FORMS */
+        /* UI */
+        .ef-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 12px; }
+        .item-list { border-left: 3px solid var(--neon); background: rgba(255,255,255,0.03); padding: 12px; border-radius: 0 8px 8px 0; margin-bottom: 10px; cursor: pointer; }
         input, select, textarea { background: #0b0e14 !important; border: 1px solid var(--border) !important; color: white !important; padding: 12px !important; border-radius: 8px !important; margin-bottom: 10px; width: 100%; }
         .btn-neon { background: var(--neon); color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 8px; width: 100%; }
     </style>
@@ -42,25 +36,29 @@
 <body>
 
 <div id="login-screen">
-    <div class="p-4 w-100" style="max-width: 400px; margin: 100px auto; background: var(--panel); border-radius: 15px; border: 1px solid var(--border);">
-        <h2 class="text-center" style="color: var(--neon);">EXITFLOW</h2>
+    <div class="p-4 w-100" style="max-width: 380px; margin: 80px auto; background: var(--panel); border-radius: 15px; border: 1px solid var(--border);">
+        <h2 class="text-center" style="color: var(--neon); letter-spacing: 2px;">EXITFLOW</h2>
         <input type="text" id="user" placeholder="Usuário" class="mt-4">
         <input type="password" id="pass" placeholder="Senha">
-        <button class="btn-neon" onclick="login()">ACESSAR</button>
+        <div class="d-flex align-items-center mb-3 gap-2">
+            <input type="checkbox" id="remember" style="width: 18px; height: 18px; margin:0;">
+            <label for="remember" class="small text-secondary">Gravar meu usuário</label>
+        </div>
+        <button class="btn-neon" onclick="login()">ENTRAR</button>
     </div>
 </div>
 
 <div id="portal" class="hidden">
     <header>
         <div class="d-flex justify-content-between align-items-center">
-            <span class="fw-bold" style="color: var(--neon);">EXITFLOW PRO</span>
-            <select id="env-select" style="width: auto; margin:0; padding: 5px !important;" onchange="switchEnvironment()">
+            <span class="fw-bold" style="color: var(--neon);">EXITFLOW <span class="text-white fw-light">PRO</span></span>
+            <select id="env-select" style="width: auto; margin:0; font-size: 12px;" onchange="switchEnvironment()">
                 <option value="saidagaia">GAIA</option>
                 <option value="polo_teste">TESTE</option>
             </select>
         </div>
         <div class="nav-scroller">
-            <span class="nav-link-ef active" id="nav-dash" onclick="showTab('dash')">MONITOR</span>
+            <span class="nav-link-ef active" id="nav-dash" onclick="showTab('dash')">MONITORAMENTO</span>
             <span class="nav-link-ef" id="nav-cal" onclick="showTab('cal')">AGENDA</span>
             <span class="nav-link-ef" id="nav-cli" onclick="showTab('cli')">CLIENTES</span>
         </div>
@@ -73,20 +71,20 @@
                 <div class="col-6"><div class="ef-card text-center"><small class="text-secondary">SAÍDA</small><h2 id="count-delivered" class="text-success mb-0">0</h2></div></div>
             </div>
             <div class="ef-card">
-                <h6>Fila de Alunos</h6>
+                <h6 class="small text-secondary text-uppercase">Fila de Alunos</h6>
                 <div id="realtime-body" class="mt-3"></div>
             </div>
         </div>
 
         <div id="tab-cal" class="tab-content hidden">
             <div class="cal-container mb-3">
-                <div class="cal-grid">
-                    <div class="cal-header">D</div><div class="cal-header">S</div><div class="cal-header">T</div><div class="cal-header">Q</div><div class="cal-header">Q</div><div class="cal-header">S</div><div class="cal-header">S</div>
+                <div class="cal-grid mb-1 text-secondary" style="font-size: 10px; text-align: center;">
+                    <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
                 </div>
                 <div id="gridCal" class="cal-grid"></div>
             </div>
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 id="calTitle" class="mb-0">Selecione um dia</h6>
+                <h6 id="calTitle" class="mb-0 small">Selecione o dia</h6>
                 <button class="btn btn-sm btn-info" onclick="openModal('modalEv')">+</button>
             </div>
             <div id="calEventsList"></div>
@@ -94,7 +92,7 @@
 
         <div id="tab-cli" class="tab-content hidden">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6>Base de Clientes</h6>
+                <h6>Escolas Cadastradas</h6>
                 <button class="btn btn-sm btn-info" onclick="openModalCli()">+ Novo</button>
             </div>
             <div id="cliList"></div>
@@ -103,55 +101,78 @@
 </div>
 
 <div class="modal fade" id="modalCli" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content bg-dark p-4 border-secondary text-white">
-    <h5 id="cliModalTitle">Novo Cliente</h5>
+    <h5 id="cliModalTitle">Cliente</h5>
     <input type="hidden" id="c-id">
-    <label class="small text-secondary">Escola</label>
-    <input type="text" id="c-nom">
-    <label class="small text-secondary">Gestor</label>
-    <input type="text" id="c-res">
-    <label class="small text-secondary">Telefone / WhatsApp</label>
-    <input type="text" id="c-tel">
-    <label class="small text-secondary">E-mail</label>
-    <input type="text" id="c-mai">
+    <input type="text" id="c-nom" placeholder="Nome da Escola">
+    <input type="text" id="c-res" placeholder="Gestor Responsável">
+    <input type="text" id="c-tel" placeholder="WhatsApp/Telefone">
+    <input type="text" id="c-mai" placeholder="E-mail">
     <div class="d-flex gap-2">
         <button id="btnDelCli" class="btn btn-outline-danger hidden" onclick="delCli()">EXCLUIR</button>
-        <button class="btn-neon" onclick="saveCli()">SALVAR</button>
+        <button class="btn-neon" onclick="saveCli()">SALVAR NO CLOUD</button>
     </div>
 </div></div></div>
 
 <div class="modal fade" id="modalEv" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content bg-dark p-4 border-secondary text-white">
-    <h5 id="dateLabel">Agendar</h5>
-    <input type="text" id="ev-emp" placeholder="Escola">
-    <textarea id="ev-ass" placeholder="Detalhes da Atividade" rows="3"></textarea>
-    <button class="btn-neon" onclick="saveEv()">SALVAR NA AGENDA</button>
+    <h5 id="dateLabel">Agendar POC</h5>
+    <input type="time" id="ev-hor">
+    <input type="text" id="ev-emp" placeholder="Instituição">
+    <textarea id="ev-ass" placeholder="Atividade/Observações" rows="3"></textarea>
+    <button class="btn-neon" onclick="saveEv()">SINCRONIZAR AGENDAMENTO</button>
 </div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     let database = null;
     let selDate = null;
-    let localDB = {
-        evs: JSON.parse(localStorage.getItem('ef_evs')) || {},
-        cli: JSON.parse(localStorage.getItem('ef_cli')) || []
+    let cloudData = { evs: {}, cli: {} };
+
+    // LOGIN & REMEMBER
+    window.onload = () => {
+        const saved = localStorage.getItem('ef_user');
+        if(saved) {
+            document.getElementById('user').value = saved;
+            document.getElementById('remember').checked = true;
+        }
     };
 
     function login() {
-        if(document.getElementById('user').value.toLowerCase() === "gustavo.filipe" && document.getElementById('pass').value === "1234") {
+        const u = document.getElementById('user').value;
+        if(u.toLowerCase() === "gustavo.filipe" && document.getElementById('pass').value === "1234") {
+            if(document.getElementById('remember').checked) localStorage.setItem('ef_user', u);
+            else localStorage.removeItem('ef_user');
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('portal').classList.remove('hidden');
-            initFirebase('saidagaia');
+            initFirebase();
         }
     }
 
-    function initFirebase(envKey) {
+    function initFirebase() {
         const config = { databaseURL: "https://saidagaia-default-rtdb.firebaseio.com" };
         if (firebase.apps.length) firebase.app().delete();
         firebase.initializeApp(config);
         database = firebase.database();
-        startRealtime();
+        
+        // Sincronização em Tempo Real de TUDO
+        syncCloud();
+        startMonitoramento();
     }
 
-    function startRealtime() {
+    function syncCloud() {
+        // Puxar Agenda do Firebase
+        database.ref('agenda_cloud').on('value', snap => {
+            cloudData.evs = snap.val() || {};
+            if(selDate) showEvents();
+            renderCalendar();
+        });
+        // Puxar Clientes do Firebase
+        database.ref('clientes_cloud').on('value', snap => {
+            cloudData.cli = snap.val() || {};
+            renderClients();
+        });
+    }
+
+    function startMonitoramento() {
         const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
         database.ref('fila/').orderByChild('data').equalTo(hoje).on('value', snap => {
             const data = snap.val() || {};
@@ -160,21 +181,21 @@
                 const item = data[id];
                 if(item.status === 'aguardando') {
                     w++;
-                    html += `<div class="item-list"><b>${item.aluno}</b><br><small class="text-secondary">${item.serie} | ${item.responsavel}</small></div>`;
+                    html += `<div class="item-list"><b>${item.aluno}</b><br><small class="text-secondary">${item.serie} • ${item.responsavel}</small></div>`;
                 } else d++;
             });
             document.getElementById('count-waiting').innerText = w;
             document.getElementById('count-delivered').innerText = d;
-            document.getElementById('realtime-body').innerHTML = html || '<p class="text-center text-secondary small">Nenhum aluno na fila</p>';
+            document.getElementById('realtime-body').innerHTML = html || '<p class="text-center text-secondary small">Sem alunos na fila</p>';
         });
     }
 
-    // CALENDÁRIO FIX
+    // AGENDA CLOUD
     function renderCalendar() {
         const g = document.getElementById('gridCal'); g.innerHTML = "";
         for(let i=1; i<=28; i++) {
             let key = `2026-02-${i < 10 ? '0'+i : i}`;
-            let has = localDB.evs[key] && localDB.evs[key].length > 0;
+            let has = cloudData.evs[key];
             let div = document.createElement('div');
             div.className = `cal-day ${selDate === key ? 'active' : ''}`;
             div.innerHTML = `<span>${i}</span>${has ? '<div class="dot"></div>' : ''}`;
@@ -184,59 +205,53 @@
     }
 
     function showEvents() {
-        const evs = localDB.evs[selDate] || [];
-        document.getElementById('calTitle').innerText = "Data: " + selDate;
-        document.getElementById('calEventsList').innerHTML = evs.map((e, i) => `
-            <div class="item-list d-flex justify-content-between align-items-start">
-                <div><b>${e.emp}</b><br><small>${e.ass}</small></div>
-                <i class="bi bi-x-circle text-danger" onclick="delEv(${i})"></i>
+        const evs = cloudData.evs[selDate] || {};
+        document.getElementById('calTitle').innerText = "Agenda: " + selDate;
+        document.getElementById('calEventsList').innerHTML = Object.keys(evs).map(id => `
+            <div class="item-list d-flex justify-content-between">
+                <div><span class="badge bg-info">${evs[id].hor}</span><br><b>${evs[id].emp}</b><br><small>${evs[id].ass}</small></div>
+                <i class="bi bi-trash text-danger" onclick="delEv('${id}')"></i>
             </div>
         `).join('');
     }
 
     function saveEv() {
-        if(!selDate) return;
-        if(!localDB.evs[selDate]) localDB.evs[selDate] = [];
-        localDB.evs[selDate].push({emp: document.getElementById('ev-emp').value, ass: document.getElementById('ev-ass').value});
-        localStorage.setItem('ef_evs', JSON.stringify(localDB.evs));
+        const ev = {
+            hor: document.getElementById('ev-hor').value,
+            emp: document.getElementById('ev-emp').value,
+            ass: document.getElementById('ev-ass').value
+        };
+        database.ref('agenda_cloud/' + selDate).push(ev);
         bootstrap.Modal.getInstance(document.getElementById('modalEv')).hide();
-        renderCalendar(); showEvents();
     }
 
-    function delEv(i) { localDB.evs[selDate].splice(i,1); localStorage.setItem('ef_evs', JSON.stringify(localDB.evs)); showEvents(); renderCalendar(); }
+    function delEv(id) { if(confirm("Remover evento?")) database.ref('agenda_cloud/' + selDate + '/' + id).remove(); }
 
-    // GESTÃO DE CLIENTES (EDITAR/EXCLUIR)
+    // CLIENTES CLOUD
     function renderClients() {
         const list = document.getElementById('cliList');
-        list.innerHTML = localDB.cli.map((c, i) => `
-            <div class="item-list" onclick="openModalCli(${i})">
-                <div class="d-flex justify-content-between">
-                    <b>${c.n}</b>
-                    <span class="text-info small">Ver detalhes</span>
-                </div>
+        list.innerHTML = Object.keys(cloudData.cli).map(id => {
+            const c = cloudData.cli[id];
+            return `<div class="item-list" onclick="openModalCli('${id}')">
+                <div class="d-flex justify-content-between"><b>${c.n}</b><i class="bi bi-chevron-right text-secondary"></i></div>
                 <small class="text-secondary">${c.t}</small>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
     }
 
-    function openModalCli(index = null) {
+    function openModalCli(id = null) {
         const modal = new bootstrap.Modal(document.getElementById('modalCli'));
-        if(index !== null) {
-            const c = localDB.cli[index];
-            document.getElementById('c-id').value = index;
+        if(id) {
+            const c = cloudData.cli[id];
+            document.getElementById('c-id').value = id;
             document.getElementById('c-nom').value = c.n;
             document.getElementById('c-res').value = c.r;
             document.getElementById('c-tel').value = c.t;
             document.getElementById('c-mai').value = c.m;
-            document.getElementById('cliModalTitle').innerText = "Editar Cliente";
             document.getElementById('btnDelCli').classList.remove('hidden');
         } else {
             document.getElementById('c-id').value = "";
-            document.getElementById('c-nom').value = "";
-            document.getElementById('c-res').value = "";
-            document.getElementById('c-tel').value = "";
-            document.getElementById('c-mai').value = "";
-            document.getElementById('cliModalTitle').innerText = "Novo Cliente";
+            document.querySelectorAll('#modalCli input').forEach(i => i.value = "");
             document.getElementById('btnDelCli').classList.add('hidden');
         }
         modal.show();
@@ -244,28 +259,22 @@
 
     function saveCli() {
         const id = document.getElementById('c-id').value;
-        const cliData = {
+        const data = {
             n: document.getElementById('c-nom').value,
             r: document.getElementById('c-res').value,
             t: document.getElementById('c-tel').value,
             m: document.getElementById('c-mai').value
         };
-
-        if(id !== "") localDB.cli[id] = cliData;
-        else localDB.cli.push(cliData);
-
-        localStorage.setItem('ef_cli', JSON.stringify(localDB.cli));
+        if(id) database.ref('clientes_cloud/' + id).update(data);
+        else database.ref('clientes_cloud').push(data);
         bootstrap.Modal.getInstance(document.getElementById('modalCli')).hide();
-        renderClients();
     }
 
     function delCli() {
         const id = document.getElementById('c-id').value;
-        if(confirm("Deseja realmente excluir este cliente?")) {
-            localDB.cli.splice(id, 1);
-            localStorage.setItem('ef_cli', JSON.stringify(localDB.cli));
+        if(confirm("Excluir cliente permanentemente?")) {
+            database.ref('clientes_cloud/' + id).remove();
             bootstrap.Modal.getInstance(document.getElementById('modalCli')).hide();
-            renderClients();
         }
     }
 
@@ -275,7 +284,6 @@
         document.getElementById('tab-' + id).classList.remove('hidden');
         document.getElementById('nav-' + id).classList.add('active');
         if(id === 'cal') renderCalendar();
-        if(id === 'cli') renderClients();
     }
 </script>
 </body>

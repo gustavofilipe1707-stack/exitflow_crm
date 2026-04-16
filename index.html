@@ -764,8 +764,10 @@ function refreshTotals() {
   const fixM=fc.reduce((s,c)=>s+(+c.valor||0)-(+c.custo||0),0);
   const fixC=fc.reduce((s,c)=>s+(+c.custo||0),0);
   const svcM=servicos.reduce((s,v)=>s+(+v.valor||0)-(+v.equip||0)-(+v.mao||0),0);
+  const svcB=servicos.reduce((s,v)=>s+(+v.valor||0),0);
+  const svcC=servicos.reduce((s,v)=>s+(+v.equip||0)+(+v.mao||0),0);
   const telM=varM+fixM, telB=varF+fixB;
-  const bruta=telB, custo=totC+fixC, marg=bruta-custo;
+  const bruta=telB+svcB, custo=totC+fixC+svcC, marg=bruta-custo;
   const s=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
   s('tot-fixos-b', fR(fixB)); s('tot-var-f', varF?fR(varF):'—');
   s('tot-var-m', varM?fR(varM):'—'); s('tot-tel-m', fR(telM));
